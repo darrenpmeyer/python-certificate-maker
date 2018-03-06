@@ -9,6 +9,16 @@ class Certificate(object):
         self.L, self.ST, self.C = loc.split('/', 2)
         self.email = email
 
+        self.SAN = []
+        if hasattr(self.CN, '__iter__') \
+                and type(self.CN) is not str\
+                and type(self.CN) is not bytes:
+            # is a list or tuple or close enough, we assume a SAN list
+            for n in self.CN:
+                self.SAN.append(n)
+
+            self.CN = self.SAN.pop(0)
+
         self.x509 = __class__.generate_x509(
             countryName=self.C,
             stateOrProvinceName=self.ST,
@@ -16,7 +26,8 @@ class Certificate(object):
             organizationName=self.O,
             organizationalUnitName=self.OU,
             emailAddress=self.email,
-            cn=self.CN
+            cn=self.CN,
+            san=self.SAN
         )
 
         self.keypair = keypair
@@ -40,7 +51,7 @@ class Certificate(object):
             organizationalUnitName,
             emailAddress,
             cn,
-            san_list=None,
+            san=None,
             issuer=None,
             expire_days=30
     ):
@@ -56,6 +67,17 @@ class Certificate(object):
         subject.CN = cn
 
         x509.set_subject(subject)
+
+        if san:
+            sanstr = "DNS: {}".format(cn)
+            for s in san:
+                sanstr += ", DNS: {}".format(s)
+
+            x509.add_extensions([
+                OpenSSL.crypto.X509Extension(
+                    b"subjectAltName", False, bytes(sanstr.encode())
+                )
+            ])
 
         if issuer is None:
             # self-issued
