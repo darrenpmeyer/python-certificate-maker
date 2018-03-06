@@ -26,8 +26,8 @@ class TestFunctionalCertificate:
 
         assert validate_x509_cert(cert.certificate())
 
-    # def test_create_self_signed_cert_for_localhost_with_san(self):
-    #     pytest.fail("Not implemented")
+    def test_create_self_signed_cert_for_localhost_with_san(self):
+        pytest.fail("Not implemented")
 
 
 class TestUnitCertificate:
@@ -70,7 +70,7 @@ class TestUnitCertificate:
         from pycert_maker import Certificate
         from OpenSSL.crypto import X509
         assert type(
-            Certificate.generate_x509('us','a','a','a','a','a','a',)
+            Certificate.generate_x509('us', 'a', 'a', 'a', 'a', 'a', 'a')
             ) is X509
 
     def test_certificate_is_x509(self, cert):
@@ -93,4 +93,11 @@ class TestUnitCertificate:
 
     def test_certificate_is_pem_cert(self, cert):
         assert cert.certificate().startswith(b'-----BEGIN CERTIFICATE-----')
+
+    def test_certificate_auto_generates_keypair(self, cert):
+        from OpenSSL.crypto import PKey
+        assert isinstance(cert.keypair, PKey)
+
+
+
 
