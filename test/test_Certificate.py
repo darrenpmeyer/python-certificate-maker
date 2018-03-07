@@ -74,6 +74,7 @@ class TestFunctionalCertificate:
 
         assert validate_x509_cert(cert.certificate())
 
+
 class TestUnitCertificate:
     @pytest.fixture(scope='class')
     def cert(self):
@@ -141,6 +142,14 @@ class TestUnitCertificate:
     def test_certificate_auto_generates_keypair(self, cert):
         from OpenSSL.crypto import PKey
         assert isinstance(cert.keypair, PKey)
+
+    def test_certificate_dump_private_key_clear(self, cert):
+        key = cert.private_key()
+        assert key.startswith(b'-----BEGIN PRIVATE KEY-----')
+
+    def test_certificate_dump_private_key_encrypted(self, cert):
+        key = cert.private_key(passphrase=b'this is a bad passphrase')
+        assert key.startswith(b'-----BEGIN ENCRYPTED PRIVATE KEY-----')
 
 
 class TestUnitCertificateWithSAN:
