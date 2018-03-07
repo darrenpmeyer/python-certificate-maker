@@ -20,6 +20,7 @@ class Certificate(object):
             the X509 representation of the certificate
 
     """
+
     def __init__(self, cn, loc=None, org=None, email=None, keypair=None, self_sign=True):
         """Create (and, by default, sign) a new certificate
 
@@ -45,6 +46,7 @@ class Certificate(object):
             self_sign (bool, optional): If you don't want the certificate to be
                 self-signed, set this `False`
         """
+        # noinspection PyPep8
         self.OU, self.O = org.split('@', 1)
         self.CN = cn
         self.L, self.ST, self.C = loc.split('/', 2)
@@ -52,7 +54,7 @@ class Certificate(object):
 
         self.SAN = []
         if hasattr(self.CN, '__iter__') \
-                and type(self.CN) is not str\
+                and type(self.CN) is not str \
                 and type(self.CN) is not bytes:
             # is a list or tuple or close enough, we assume a SAN list
             for n in self.CN:
@@ -83,6 +85,7 @@ class Certificate(object):
             # noinspection PyTypeChecker
             self.x509.sign(self.keypair, "sha512")
 
+    # noinspection PyPep8Naming
     @staticmethod
     def generate_x509(
             countryName,
@@ -115,7 +118,7 @@ class Certificate(object):
         """
         x509 = OpenSSL.crypto.X509()
         subject = x509.get_subject()
-        
+
         subject.countryName = countryName
         subject.stateOrProvinceName = stateOrProvinceName
         subject.localityName = localityName
