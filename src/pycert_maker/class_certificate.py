@@ -33,7 +33,7 @@ class Certificate(object):
         Args:
             cn (str or :obj:`list` of :obj:`str`): the host name(s) that are valid
                 for this cert. If it's a list or tuple, the first value will be the
-                certificate CN and the list will be the list of SANs
+                certificate CN and the list/tuple will be added to the SAN field
             loc (str): Location in the form 'Locale/State/CC'; for example use
                 "Minneapolis/Minneosta/US" for the city of Minneapolis in the
                 State of Minnesota, in the USA. CC is the ISO two-letter country
@@ -61,6 +61,9 @@ class Certificate(object):
                 self.SAN.append(n)
 
             self.CN = self.SAN.pop(0)
+        else:
+            # if only one host is provided in CN, then make a single SAN entry for it
+            self.SAN.append(self.CN)
 
         self.x509 = __class__.generate_x509(
             countryName=self.C,
@@ -129,16 +132,18 @@ class Certificate(object):
 
         x509.set_subject(subject)
 
-        if san:
-            sanstr = "DNS: {}".format(cn)
-            for s in san:
-                sanstr += ", DNS: {}".format(s)
+        if not san:
+            san = [cn]
 
-            x509.add_extensions([
-                OpenSSL.crypto.X509Extension(
-                    b"subjectAltName", False, bytes(sanstr.encode())
-                )
-            ])
+        sanstr = "DNS: {}".format(cn)
+        for s in san:
+            sanstr += ", DNS: {}".format(s)
+
+        x509.add_extensions([
+            OpenSSL.crypto.X509Extension(
+                b"subjectAltName", False, bytes(sanstr.encode())
+            )
+        ])
 
         if issuer is None:
             # self-issued
